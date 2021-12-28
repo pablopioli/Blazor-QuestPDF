@@ -1,0 +1,22 @@
+﻿@page "/"
+@using QuestPDF.Fluent
+
+<PageTitle>Index</PageTitle>
+
+<button class="btn btn-primary" @onclick="CreatePdf">Create PDF</button>
+
+@code {
+    [Inject] Blazorme.IStreamSaver StreamSaver { get; set; }
+
+    async Task CreatePdf()
+    {
+        var model = InvoiceDocumentDataSource.GetInvoiceDetails();
+        var document = new InvoiceDocument(model);
+        using var ms = new MemoryStream();
+        document.GeneratePdf(ms);
+        ms.Position = 0;
+
+        await using var output = await StreamSaver.CreateWritableFileStreamAsync("invoice.pdf");
+        await ms.CopyToAsync(output);
+    }
+}
